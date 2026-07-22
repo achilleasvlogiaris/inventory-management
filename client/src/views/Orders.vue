@@ -27,6 +27,42 @@
         </div>
       </div>
 
+      <div class="card" v-if="submittedRestockOrders.length > 0">
+        <div class="card-header">
+          <h3 class="card-title">{{ t('orders.submittedOrders.title') }} ({{ submittedRestockOrders.length }})</h3>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>{{ t('orders.table.orderNumber') }}</th>
+                <th>{{ t('orders.table.items') }}</th>
+                <th>{{ t('orders.table.status') }}</th>
+                <th>{{ t('orders.table.orderDate') }}</th>
+                <th>{{ t('orders.submittedOrders.leadTime') }}</th>
+                <th>{{ t('orders.table.expectedDelivery') }}</th>
+                <th>{{ t('orders.table.totalValue') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="order in submittedRestockOrders" :key="order.id">
+                <td><strong>{{ order.order_number }}</strong></td>
+                <td>{{ t('orders.itemsCount', { count: order.items.length }) }}</td>
+                <td>
+                  <span :class="['badge', getOrderStatusClass(order.status)]">
+                    {{ t(`status.${order.status.toLowerCase()}`) }}
+                  </span>
+                </td>
+                <td>{{ formatDate(order.order_date) }}</td>
+                <td>{{ order.lead_time_days }} {{ t('orders.submittedOrders.days') }}</td>
+                <td>{{ formatDate(order.expected_delivery) }}</td>
+                <td><strong>{{ currencySymbol }}{{ order.total_value.toLocaleString() }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <h3 class="card-title">{{ t('orders.allOrders') }} ({{ orders.length }})</h3>
@@ -133,6 +169,10 @@ export default {
       return orders.value.filter(order => order.status === status)
     }
 
+    const submittedRestockOrders = computed(() => {
+      return orders.value.filter(order => order.source === 'restock')
+    })
+
     const getOrderStatusClass = (status) => {
       const statusMap = {
         'Delivered': 'success',
@@ -161,6 +201,7 @@ export default {
       error,
       orders,
       getOrdersByStatus,
+      submittedRestockOrders,
       getOrderStatusClass,
       formatDate,
       currencySymbol,
